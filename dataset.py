@@ -2,6 +2,7 @@ import pandas as pd
 import os.path
 
 import evaluation
+import pycountry, pycountry_convert
 
 _DATA_DIR = './data/'
 _TRAINING_SET_FN = 'TrainingSet.csv'
@@ -22,6 +23,28 @@ class UNDevGoalsDataset():
         self._train = pd.read_csv(training_set_fn, index_col=0)
         self._submit_rows = pd.read_csv(submission_rows_fn, index_col=0)
 
+    
+    def preprocess_with_interpolation(self):
+        """Preprecoess the data while adding in continent and region in order to better
+        interpolate missing data and improve models."""
+        
+        X = self._train.loc[self._submit_rows.index]
+        
+        X['continent'] = ''
+        
+        for index, row in X.iterrows():
+            
+            country = pycountry.countries.get(name = row['Country Name'])
+            
+            try:
+                alpha_2 = country.alpha_2
+                X['continent'] = pycountry_convert.country_alpha2_to_continent_code(alpha_2)
+            except(AttributeError, KeyError):
+                print(row['Country Name'])
+
+
+        return X
+            
 
     def preprocess_simple(self):
         """Preprocess the data for preliminary model building.
@@ -85,7 +108,7 @@ if __name__=='__main__':
 
     dataset = UNDevGoalsDataset()
 
-    X, Y = dataset.preprocess_simple()
+    X, Y = dataset.preprocess_with_interpolation()
 
     print(X.describe())
     print(Y.describe())
