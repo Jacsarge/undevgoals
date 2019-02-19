@@ -28,7 +28,7 @@ class UNDevGoalsDataset():
         """Preprecoess the data while adding in continent and region in order to better
         interpolate missing data and improve models."""
         
-        X = self._train.loc[self._submit_rows.index]
+        X = self._train
         
         X['continent'] = ''
         
