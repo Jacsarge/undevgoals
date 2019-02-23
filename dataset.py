@@ -73,18 +73,6 @@ class UNDevGoalsDataset():
         _, Y = self.preprocess_simple()
 
         return evaluation.RMSE(predictions, Y)
-
-
-if __name__=='__main__':
-
-    dataset = UNDevGoalsDataset()
-
-    X, Y = dataset.preprocess_with_interpolation()
-
-    print(X.describe())
-    print(Y.describe())
-    
-        return model_name(preprocessed_data, **model_kwargs)
     
     
     def error(self, predictions, error_fn=RMSE, **error_fn_kwargs):
