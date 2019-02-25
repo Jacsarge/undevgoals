@@ -22,6 +22,7 @@ class UNDevGoalsDataset():
         self._train = pd.read_csv(training_set_fn, index_col=0)
         self._submit_rows = pd.read_csv(submission_rows_fn, index_col=0)
 
+
     def preprocess(self, pp_fn=preprocess_simple, **pp_fn_kwargs):
         """
         Preprocess data using function pp_fn (with additional kwargs if necessary) from preprocessing.py
@@ -35,6 +36,7 @@ class UNDevGoalsDataset():
         """
 
         return pp_fn(self._train, self._submit_rows.index, **pp_fn_kwargs)
+
 
     def predictions(self, preprocessed_data, model_name=status_quo_model, **model_kwargs):
         """Return predictions from model_name given preprocessed data
@@ -52,6 +54,7 @@ class UNDevGoalsDataset():
         """
 
         return model_name(preprocessed_data, **model_kwargs)
+
 
     def error(self, predictions, error_fn=RMSE, **error_fn_kwargs):
         """
@@ -71,11 +74,13 @@ class UNDevGoalsDataset():
         _, Y = self.preprocess()
         return error_fn(predictions, Y, **error_fn_kwargs)
 
+
     def training_indices(self):
         """Returns list of indices that reference rows we need to predict"""
 
         X, _ = self.preprocess()
         return np.array(X.index)
+
 
     def training_indicators(self):
         """Returns list of the 8 indicators we will need to predict"""
