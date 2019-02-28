@@ -3,11 +3,11 @@ import numpy as np
 
 import pycountry, pycountry_convert
 
-def preprocess_with_interpolation(training_set):
+def get_continent(training_set):
         """Preprecoess the data while adding in continent and region in order to better
         interpolate missing data and improve models."""
         
-        X = training_set._train
+        X = training_set.copy()
         
         X['continent'] = ''
         
