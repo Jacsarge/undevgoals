@@ -5,143 +5,28 @@ import pycountry, pycountry_convert
 
 import json
 
-def preprocess_with_interpolation(training_set):
-        """Preprecoess the data while adding in continent and region in order to better
-        interpolate missing data and improve models."""
+def get_continent(row):
+    """ retrieve the continent data for a given row """
+    
+    if row['Country Name'] in ['Bahamas, The', 'Curacao', 'Sint Maarten (Dutch part)', 'St. Kitts and Nevis', 'St. Lucia', 'St. Martin (French part)', 'St. Vincent and the Grenadines', 'Virgin Islands (U.S.)']:
+        return 'NA'
+    elif row['Country Name'] in ['Channel Islands','Czech Republic','Faeroe Islands','Kosovo','Macedonia, FYR','Moldova','Slovak Republic']:
+        return 'EU'
+    elif row['Country Name'] in ['Hong Kong SAR, China', 'Iran, Islamic Rep.', 'Korea, Dem. Rep.', 'Korea, Rep.', 'Kyrgyz Republic', 'Lao PDR','Macao SAR, China', 'Micronesia, Fed. Sts.','Timor-Leste','Vietnam', 'West Bank and Gaza', 'Yemen, Rep.']:
+        return 'AS'
+    elif row['Country Name'] in ['Congo, Dem. Rep.', 'Congo, Rep.', "Cote d'Ivoire", 'Egypt, Arab Rep.', 'Tanzania', 'Gambia, The']:
+        return 'AF'
+    elif row['Country Name'] in ['Bolivia', 'Venezuela, RB']:
+        return 'SA'
+    else:
+        return pycountry_convert.country_alpha2_to_continent_code(pycountry.countries.get(name = row['Country Name']).alpha_2)
+
+def preprocess_continents(training_set):
+        """Preprocess the data while adding in continent and region in order to better interpolate missing data and improve models."""
         
         X = training_set.copy()
         
-        X['continent'] = ''
-        
-        missing = []
-        
-        for index, row in X.iterrows(): 
-            
-            country = pycountry.countries.get(name = row['Country Name'])
-            
-            try:
-                alpha_2 = country.alpha_2
-                continent = pycountry_convert.country_alpha2_to_continent_code(alpha_2)
-            except(AttributeError, KeyError):
-                missing.append(row['Country Name'])
-            
-            X.at[index, 'continent'] = continent
-
-        missing_series = pd.Series(missing)
-        missing_unique = missing_series.unique()
-        
-        
-        for i, row in X[(X['continent'] == '')].iterrows():
-            for name in missing_unique:
-                
-                if(row['Country Name'] == name):
-                    
-                    if(name == missing_unique[0]):
-                        row['continent'] = 'NA'
-                    
-                    if(name == missing_unique[1]):
-                        row['continent'] = 'SA'
-                        
-                    if(name == missing_unique[2]):
-                        row['continent'] = 'EU'
-                        
-                    if(name == missing_unique[3]):
-                        row['continent'] = 'AF'
-                        
-                    if(name == missing_unique[4]):
-                        row['continent'] = 'AF'
-                        
-                    if(name == missing_unique[5]):
-                        row['continent'] = 'AF'
-                        
-                    if(name == missing_unique[6]):
-                        row['continent'] = 'SA'
-                    
-                    if(name == missing_unique[7]):
-                        row['continent'] = 'EU'
-                        
-                    if(name == missing_unique[8]):
-                        row['continent'] = 'AF'                       
-                        
-                    if(name == missing_unique[9]):
-                        row['continent'] = 'EU'                        
-                        
-                    if(name == missing_unique[10]):
-                        row['continent'] = 'AF'                        
-                        
-                    if(name == missing_unique[11]):
-                        row['continent'] = 'AS'
-                        
-                    if(name == missing_unique[12]):
-                        row['continent'] = 'AS'
-                        
-                    if(name == missing_unique[13]):
-                        row['continent'] = 'AS'
-                        
-                    if(name == missing_unique[14]):
-                        row['continent'] = 'AS'
-                    
-                    if(name == missing_unique[15]):
-                        row['continent'] = 'EU'
-                      
-                    if(name == missing_unique[16]):
-                        row['continent'] = 'AS'
-                    
-                    if(name == missing_unique[17]):
-                        row['continent'] = 'AS'
-                    
-                    if(name == missing_unique[18]):
-                        row['continent'] = 'AS'
-                      
-                    if(name == missing_unique[19]):
-                        row['continent'] = 'EU'
-                      
-                    if(name == missing_unique[20]):
-                        row['continent'] = 'OC'
-                      
-                    if(name == missing_unique[21]):
-                        row['continent'] = 'EU'
-                      
-                    if(name == missing_unique[22]):
-                        row['continent'] = 'NA'
-                      
-                    if(name == missing_unique[23]):
-                        row['continent'] = 'EU'
-                        
-                    if(name == missing_unique[24]):
-                        row['continent'] = 'NA'
-                      
-                    if(name == missing_unique[25]):
-                        row['continent'] = 'NA'
-                      
-                    if(name == missing_unique[26]):
-                        row['continent'] = 'NA'
-                      
-                    if(name == missing_unique[27]):
-                        row['continent'] = 'NA'
-                      
-                    if(name == missing_unique[28]):
-                        row['continent'] = 'AF'
-                        
-                    if(name == missing_unique[29]):
-                        row['continent'] = 'AS'
-                      
-                    if(name == missing_unique[30]):
-                        row['continent'] = 'SA'
-                        
-                    if(name == missing_unique[31]):
-                        row['continent'] = 'AS'
-                      
-                    if(name == missing_unique[32]):
-                        row['continent'] = 'NA'
-                   
-                    if(name == missing_unique[33]):
-                        row['continent'] = 'AS'
-                      
-                    if(name == missing_unique[34]):
-                        row['continent'] = 'AS'
-                    
-          
+        X['continent'] = X.apply(lambda row: get_continent(row),axis=1)
         
         return X
 
@@ -150,7 +35,7 @@ def preprocess_with_continent_interpolation(training_set, submit_rows_index, yea
     with continent-indicator-year averages filled in for missing data. These
     averages come from the ind_yr_cont_avgs.json file
     """
-    X_with_cont = preprocess_with_interpolation(training_set)
+    X_with_cont = preprocess_continents(training_set)
     X_submit = X_with_cont.loc[submit_rows_index]
 
     def rename_cols(colname):
